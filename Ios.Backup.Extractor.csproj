@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="15.0.8" />
+    <PackageReference Include="Dapper" Version="2.0.35" />
+    <PackageReference Include="plist-cil" Version="2.1.0" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.103" />
+  </ItemGroup>
+
+</Project>
