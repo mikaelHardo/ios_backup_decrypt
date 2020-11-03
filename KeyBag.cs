@@ -227,6 +227,11 @@ namespace Ios.Backup.Extractor
         {
             var ck = ClassKeys[manifestClass].Key;
 
+            if (ck == null)
+            {
+                throw new Exception("Key not found, did you provide the correct pass phrase?");
+            }
+
             if (manifestKey.Length != 0x28)
             {
                 throw new Exception("Invalid key length");
