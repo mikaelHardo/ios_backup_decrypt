@@ -11,8 +11,11 @@ namespace Ios.Backup.Extractor
         
         static void Main(string[] args)
         {
-            var backupDir = "insert backup dir";
-            var passPhrase = "insert passphrase";
+            //Example: C:\\Users\\[username]\Apple\MobileSync\Backup\12348030-12004933163B902E
+            var backupDir = "insert path here";
+
+            //Password chosen in iTunes
+            var passPhrase = "insert pathphrase here";
 
             var path = "Library/Safari/History.db";
 
