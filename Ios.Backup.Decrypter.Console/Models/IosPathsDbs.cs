@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ios.Backup.Extractor
+﻿namespace Ios.Backup.Decrypter.Console.Models
 {
-    public static class IosPaths
+    public static class IosPathsDbs
     {
         public const string ADDRESS_BOOK = "Library/AddressBook/AddressBook.sqlitedb";
         public const string TEXT_MESSAGES = "Library/SMS/sms.db";

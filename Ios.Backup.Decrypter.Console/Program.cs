@@ -2,8 +2,11 @@
 using System.Globalization;
 using System.IO;
 using CsvHelper;
+using Ios.Backup.Decrypter.Console.Models;
+using Ios.Backup.Decrypter.Console.Repositories;
+using Ios.Backup.Decrypter.Library;
 
-namespace Ios.Backup.Extractor
+namespace Ios.Backup.Decrypter.Console
 {
     internal class Program
     {
@@ -12,19 +15,20 @@ namespace Ios.Backup.Extractor
         static void Main(string[] args)
         {
             //Example: C:\\Users\\[username]\Apple\MobileSync\Backup\12348030-12004933163B902E
-            var backupDir = "insert path here";
+            var backupDir = "";
 
             //Password chosen in iTunes
-            var passPhrase = "insert pathphrase here";
+            var passPhrase = "";
 
             var path = "Library/Safari/History.db";
 
             using (var extractor = new IosBackupClient(backupDir, passPhrase))
             {
                 ExtractFile(extractor, path, "c:\\temp\\safari-history.db");
-                ExtractFile(extractor, IosPaths.CALL_HISTORY, "c:\\temp\\call-history.db");
+                ExtractFile(extractor, IosPathsDbs.CALL_HISTORY, "c:\\temp\\call-history.db");
+                
+                extractor.ExtractFiles(IosPathsFiles.CAMERA_ROLL, "c:\\temp\\camera_roll");
             }
-
         }
 
         private static void ExtractFile(IosBackupClient client, string path, string outFileName)
@@ -36,7 +40,7 @@ namespace Ios.Backup.Extractor
                 IEnumerable<dynamic> data = null;
                 switch (path)
                 {
-                    case IosPaths.SAFARI_HISTORY:
+                    case IosPathsDbs.SAFARI_HISTORY:
                         data = DataRepository.FetchHistoryData(outFileName);
                         break;
                 }

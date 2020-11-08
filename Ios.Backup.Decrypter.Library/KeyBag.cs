@@ -5,15 +5,15 @@ using System.Security.Cryptography;
 using System.Text;
 using Claunia.PropertyList;
 
-namespace Ios.Backup.Extractor
+namespace Ios.Backup.Decrypter.Library
 {
     public class KeyBag
     {
         private string[] _tags = new[] { nameof(ClassKey.WRAP), nameof(ClassKey.CLAS), nameof(ClassKey.KTYP), nameof(ClassKey.WPKY) };
-        public int? Type { get; set; }
-        public int? Wrap { get; set; }
-        public byte[] UUID { get; set; }
-        public Dictionary<string, byte[]> Attr { get; set; } = new Dictionary<string, byte[]>();
+        private int? Type { get; set; }
+        private int? Wrap { get; set; }
+        private byte[] UUID { get; set; }
+        private Dictionary<string, byte[]> Attr { get; set; } = new Dictionary<string, byte[]>();
         private Dictionary<int, ClassKey> ClassKeys { get; set; } = new Dictionary<int, ClassKey>();
 
         private int _WRAP_PASSPHRASE = 2;
@@ -194,11 +194,8 @@ namespace Ios.Backup.Extractor
         {
             public int CLAS { get; set; }
             public byte[] UUID { get; set; }
-
             public int? WRAP { get; set; }
-
             public int? KTYP { get; set; }
-
             public byte[] WPKY { get; set; }
             public byte[] Key { get; set; }
         }

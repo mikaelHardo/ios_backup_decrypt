@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
@@ -26,12 +28,26 @@ namespace Ios.Backup.Extractor
         {
             using (var conn = new SqliteConnection($"Data Source={_dbFilePath}\\Manifest.db"))
             {
-                var file = conn.Query<DBFile>(@"SELECT fileID, file
+                var file = conn.Query<DBFile>(@"
+                SELECT fileID, file
                 FROM Files
                 WHERE relativePath = @Path
                 ORDER BY domain, relativePath
                 LIMIT 1;", new {Path = path}).FirstOrDefault();
                 return file;
+            }
+        }
+
+        public IEnumerable<DBFile> GetFiles(string path)
+        {
+            using (var conn = new SqliteConnection($"Data Source={_dbFilePath}\\Manifest.db"))
+            {
+                var files = conn.Query<DBFile>(@"
+                SELECT fileID, relativePath, file
+                FROM Files
+                WHERE relativePath LIKE @Path
+                ORDER BY domain, relativePath;", new {Path = path});
+                return files;
             }
         }
     }
@@ -41,6 +57,8 @@ namespace Ios.Backup.Extractor
         public string fileID { get; set; }
 
         public byte[] file { get; set; }
+
+        public string RelativePath { get; set; }
     }
 
 }

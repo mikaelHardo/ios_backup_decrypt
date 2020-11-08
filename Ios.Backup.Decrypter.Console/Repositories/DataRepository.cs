@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-namespace Ios.Backup.Extractor
+namespace Ios.Backup.Decrypter.Console.Repositories
 {
     public class DataRepository
     {

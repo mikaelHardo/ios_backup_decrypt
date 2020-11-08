@@ -3,8 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using Claunia.PropertyList;
+using Ios.Backup.Extractor;
 
-namespace Ios.Backup.Extractor
+namespace Ios.Backup.Decrypter.Library
 {
     public class IosBackupClient : IDisposable
     {
@@ -45,7 +46,51 @@ namespace Ios.Backup.Extractor
         /// <param name="outputFileName">Path to save file</param>
         public void ExtractFiles(string path, string outputFileName)
         {
-           throw new NotImplementedException();
+            Init();
+
+            var files = _repository.GetFiles(path);
+
+            Directory.CreateDirectory(outputFileName);
+
+            foreach (var file in files)
+            {
+                var filename = Path.GetFileName(file.RelativePath);
+                var filePath = Path.Join(outputFileName, filename);
+                var decryptedData = ExtractFileAsBytes(file);
+
+                if (decryptedData != null)
+                {
+                    File.WriteAllBytes(filePath, decryptedData);
+                }
+            }
+
+            /*
+             *try:
+             cur = self._temp_manifest_db_conn.cursor()
+             query = """
+                 SELECT fileID, relativePath, file
+                 FROM Files
+                 WHERE relativePath LIKE ?
+                 ORDER BY domain, relativePath;
+             """
+             cur.execute(query, (relative_paths_like,))
+             results = cur.fetchall()
+         except sqlite3.Error:
+             return None
+         # Ensure output destination exists then loop through matches:
+         os.makedirs(output_folder, exist_ok=True)
+         for file_id, matched_relative_path, file_bplist in results:
+             filename = os.path.basename(matched_relative_path)
+             output_path = os.path.join(output_folder, filename)
+             # Decrypt the file:
+             decrypted_data = self._decrypt_inner_file(file_id=file_id, file_bplist=file_bplist)
+             # Output to disk:
+             if decrypted_data is not None:
+                 with open(output_path, 'wb') as outfile:
+                     outfile.write(decrypted_data)
+             *
+             *
+             */
         }
 
         private void Init()
@@ -62,6 +107,12 @@ namespace Ios.Backup.Extractor
             _keybag = new KeyBag(backupKeyBag);
 
             NSData manifestKeyObject = (NSData)rootDict.ObjectForKey("ManifestKey");
+
+            if (manifestKeyObject == null)
+            {
+                throw new Exception("Could not find ManifestKey. Is this an encrypted backup?");
+            }
+
             var manifestKey = manifestKeyObject.Bytes.Skip(4).ToArray();
             var manifestClass = (int)StructConverter.Unpack("<l", manifestKeyObject.Bytes.Take(4).ToArray())[0];
 
@@ -91,27 +142,32 @@ namespace Ios.Backup.Extractor
 
             var file = _repository.GetFile(path);
 
-            var plist = (NSDictionary)PropertyListParser.Parse(file.file);
-            var objects = (NSArray)plist.Get("$objects");
+            return ExtractFileAsBytes(file);
+        }
 
-            var top = (NSDictionary)plist.Get("$top");
-            var root = (UID)top["root"];
-            var objectsItem = (int)root.ToUInt64();
+        private byte[] ExtractFileAsBytes(DBFile file)
+        {
+            var plist = (NSDictionary) PropertyListParser.Parse(file.file);
+            var objects = (NSArray) plist.Get("$objects");
 
-            var fileData = (NSDictionary)objects[objectsItem];
+            var top = (NSDictionary) plist.Get("$top");
+            var root = (UID) top["root"];
+            var objectsItem = (int) root.ToUInt64();
 
-            var protectionClass = (NSNumber)fileData["ProtectionClass"];
+            var fileData = (NSDictionary) objects[objectsItem];
+
+            var protectionClass = (NSNumber) fileData["ProtectionClass"];
 
             if (!fileData.ContainsKey("EncryptionKey"))
             {
                 return null; //This file is not encrypted; either a directory or empty.
             }
 
-            var keyId = (UID)fileData["EncryptionKey"];
+            var keyId = (UID) fileData["EncryptionKey"];
 
-            var encryptionKeyArray = (NSDictionary)objects[(int)keyId.ToUInt64()];
+            var encryptionKeyArray = (NSDictionary) objects[(int) keyId.ToUInt64()];
 
-            var encryptionKeyData = (NSData)encryptionKeyArray["NS.data"];
+            var encryptionKeyData = (NSData) encryptionKeyArray["NS.data"];
 
             var encryptionKey = encryptionKeyData.Bytes.Skip(4).ToArray();
 
